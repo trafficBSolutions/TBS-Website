@@ -69,4 +69,5 @@ Currently, two official plugins are available:
     ---.env
     ---index.js
     ---package-lock.json
-    ---package.json ```
+    ---package.json
+```
