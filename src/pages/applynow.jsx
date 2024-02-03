@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import '../css/apply.css';
-import FileInput from '../components/FileInput'
 import axios from 'axios'
 import {toast} from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 
 export default function Apply() {
+  const [phone, setPhone] = useState('');
   const navigate = useNavigate()
   const [data, formData] = useState({
     first: '',
@@ -19,35 +19,57 @@ export default function Apply() {
   const [submissionMessage, setSubmissionMessage] = useState('');
   const [submissionErrorMessage, setSubmissionErrorMessage] = useState('');
 
+  const handlePhoneChange = (event) => {
+    const input = event.target.value;
+    const formatted = input.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+    setPhone(formatted);
+    // Also update the data state to include the formatted phone number
+    formData({ ...data, phone: formatted });
+  };
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  const { first, last, email, phone, resume, cover, message } = data;
-  try {
-    const response = await axios.post('/applynow', {
-      first, last, email, phone, resume, cover, message
-    });
-    // Check if response has error
-    if (response.data.error) {
-      // Set submissionErrorMessage state to display the error message
-      setSubmissionErrorMessage(response.data.error);
-    } else {
-      // If no error, clear form data and display success message
-      formData({
-        first: '',
-        last: '',
-        email: '',
-        resume: '',
-        cover: '',
-        phone: '',
-        message: ''
-      });
-      setSubmissionMessage('Application Submitted! We will be with you within 48 hours!');
-      toast.success('Application Submitted! We will be with you within 48 hours!');
-      navigate('/applynow');
+    e.preventDefault();
+    console.log('Form submitted');
+
+    const formDataObj = new FormData();
+    formDataObj.append('first', data.first);
+    formDataObj.append('last', data.last);
+    formDataObj.append('email', data.email);
+    formDataObj.append('phone', data.phone);
+    formDataObj.append('resume', data.resume);
+    formDataObj.append('cover', data.cover);
+    formDataObj.append('message', data.message);
+
+    try {
+        const response = await axios.post('/applynow', formDataObj, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+
+        if (response.data.error) {
+            setSubmissionErrorMessage(response.data.message); // Update the submission error message state
+        } else {
+            formData({
+                first: '',
+                last: '',
+                email: '',
+                phone: '',
+                resume: '',
+                cover: '',
+                message: ''
+            });
+            setPhone('');
+            setSubmissionMessage('Application Submitted! We will be with you within 48 hours!');
+            toast.success('Application Submitted! We will be with you within 48 hours!');
+            navigate('/applynow');
+        }
+    } catch (error) {
+      if (error.response && error.response.status === 400) {
+        setSubmissionErrorMessage(error.response.data.message); 
+      } else {
+        console.log(error); 
+      }
     }
-  } catch (error) {
-    console.log(error);
-  }
 };
     return (
       <div>
@@ -93,7 +115,15 @@ export default function Apply() {
           Join our dedicated team and contribute to creating safer, 
           more efficient roadways.</h2>
         </div>
-        <form className="apply-set -- box" id="applicationForm" onSubmit={handleSubmit}>
+
+        
+        <form 
+        className="apply-set -- box" 
+        method="post" 
+        onSubmit={handleSubmit} 
+        >
+
+
           <div className="container container--narrow page-section">
 
           <h1 className="job-app-box">Job Application Form</h1>
@@ -133,8 +163,16 @@ export default function Apply() {
             <div className="phone">
             <div className="name-input">
             <label className="phone">Phone Number *</label>
-              <input name="phone" type="text" className="phone-box"text="phone--input" placeholder="Enter Phone Number"
-              value={data.phone} onChange={(e) => formData({...data, phone: e.target.value})}required />
+            <input
+  name="phone"
+  type="text"
+  className="phone-box"
+  text="phone--input"
+  placeholder="Enter Phone Number"
+  value={phone} // Bind to phone state
+  onChange={handlePhoneChange}
+  required
+/>;
               </div>
               </div>  
               </div>  
@@ -142,18 +180,13 @@ export default function Apply() {
             <label className="resume-label">Resume/Cover Letter:</label>
               <h1 className="resume-note">Note: You can only submit .doc, .pdf, .txt, and .pages files</h1>
               <div className="resume-input">
-        <div className="resume">
+        <div className="resume-section">
           <div className="name-input">
-            <label htmlFor="resume" className="resume-name">Resume *</label>
+            <label htmlFor="resume-label" className="resume-name">Resume *</label>
             <div className="file-input-container">
               <label className="file-label"></label>
-              <FileInput
-                type="file"
-                id="resume"
-                className="fileInput"
-                accept=".pdf,.doc,.docx,.txt,.pages" 
-                value={data.resume} onChange={(e) => formData({...data, resume: e.target.files[0]})}required
-              />
+              <input type="file" name="resume" accept=".pdf,.doc,.docx,.txt,.page" onChange={(e) => formData({...data, resume: e.target.files[0]})} required />
+              
             </div>
           </div>
         </div>
@@ -163,12 +196,7 @@ export default function Apply() {
           <label className="cover-name">Cover Letter</label>
           <div className="file-input-container">
             <label className="file-label"></label>
-            <FileInput
-              type="file"
-              id="coverLetter"
-              className="fileInput"
-              accept=".pdf,.doc,.docx,.txt,.pages"
-              value={data.cover} onChange={(e) => formData({...data, cover: e.target.files[0]})} />
+            <input type="file" name="cover" accept=".pdf,.doc,.docx,.txt,.page"onChange={(e) => formData({...data, cover: e.target.files[0]})}/>
           
           </div>
         </div>
@@ -180,9 +208,9 @@ export default function Apply() {
                 value={data.message} onChange={(e) => formData({...data, message: e.target.value})}required />
                   <button type="submit" className="btn btn--full submit-app">Submit Application</button>
           </div>
-          {submissionErrorMessage && (
+          {submissionErrorMessage && 
             <div className="submission-error-message">{submissionErrorMessage}</div>
-          )}
+          }
           {submissionMessage && (
           <div className="submission-message">{submissionMessage}</div>
          )}
