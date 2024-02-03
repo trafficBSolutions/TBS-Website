@@ -178,7 +178,8 @@ export default function Apply() {
               </div>  
 
             <label className="resume-label">Resume/Cover Letter:</label>
-              <h1 className="resume-note">Note: You can only submit .doc, .pdf, .txt, and .pages files</h1>
+              <h1 className="resume-note">Note: You can only submit .doc, .pdf, .txt, and .pages files. Your resume is required before you submit.
+              Cover letters are optional but are recommended. </h1>
               <div className="resume-input">
         <div className="resume-section">
           <div className="name-input">
@@ -206,6 +207,9 @@ export default function Apply() {
    
                 <textarea className="message-text" name="message" type="text" placeholder="Enter Message"
                 value={data.message} onChange={(e) => formData({...data, message: e.target.value})}required />
+                <h1 className="warning-message">If you have already submitted before, you will not be able to submit again. If you're a former 
+                employee for TBS and want your job back, please call (706) 263-0175. If you're new and just submitted, your information has already
+                 been reveived! We will be with you with 48 hours.</h1>
                   <button type="submit" className="btn btn--full submit-app">Submit Application</button>
           </div>
           {submissionErrorMessage && 
@@ -232,3 +236,4 @@ export default function Apply() {
     )
 
     }
+
