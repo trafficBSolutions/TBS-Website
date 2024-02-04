@@ -32,11 +32,6 @@ const submitApplication = async (req, res) => {
             });
         }
 
-        // Check if application already exists with the same email, phone, resume, or cover letter
-       
-          
-       
-
         // Create a new application entry
         const newApp = await Application.create({
             first,
@@ -61,13 +56,34 @@ const submitApplication = async (req, res) => {
             });
         }
 
-        // Send notification email with attachments
+        // Contact details for William L Rowell Traffic and Barrier Solutions, LLC
+        const contactInfo = `
+            <p>Contact Information:</p>
+            <p>William L Rowell</p>
+            <p>Traffic and Barrier Solutions. LLC</p>
+            <p>723 N Wall Street</p>
+            <p>Calhoun, GA 30701</p>
+            <p>Cell: 706-879-0106</p>
+            <p>Website: <a href="http://www.trafficbarriersolutions.com">www.trafficbarriersolutions.com</a></p>
+        `;
+
+        // Send notification email with attachments and contact details
         const mailOptions = {
             from: 'Traffic & Barrier Solutions LLC <tbsolutions9@gmail.com>',
             to: email,
             bcc: myEmail,
             subject: 'Application Submitted',
-            text: `Dear Applicant,\n\nYour application has been submitted successfully! We will be with you within 48 hours!\n\nFirst Name: ${first}\nLast Name: ${last}\nEmail: ${email}\nPhone: ${phone}\n\nMessage:\n${message}`,
+            html: `
+                <p>Dear Applicant,</p>
+                <p>Your application has been submitted successfully! We will be with you within 48 hours!</p>
+                <p>First Name: ${first}</p>
+                <p>Last Name: ${last}</p>
+                <p>Email: ${email}</p>
+                <p>Phone: ${phone}</p>
+                <p>Message:</p>
+                <p>${message}</p>
+                ${contactInfo}
+            `,
             attachments
         };
 
@@ -99,3 +115,4 @@ module.exports = {
     test,
     submitApplication
 };
+
